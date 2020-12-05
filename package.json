@@ -1,0 +1,20 @@
+{
+  "name": "workflow-sync-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RaisinTen/workflow-sync-server.git"
+  },
+  "author": "Darshan Sen",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/RaisinTen/workflow-sync-server/issues"
+  },
+  "homepage": "https://github.com/RaisinTen/workflow-sync-server#readme"
+}
