@@ -6,4 +6,8 @@ app.get('/', (req, res) => {
     res.send('<h1>web sync server</h1>');
 });
 
-app.listen(5000 || process.env.PORT);
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT);
+
+console.log(`Listening on port ${PORT}`);
