@@ -65,6 +65,8 @@ app.delete('/', (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT);
+const server = app.listen(PORT);
+
+console.log(`Server timeout: ${ server.timeout }`);
 
 console.log(`Listening on port ${PORT}`);
