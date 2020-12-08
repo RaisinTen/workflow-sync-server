@@ -1,20 +1,36 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const util = require('util');
 
-let isRunning = false;
+let runningID = null;
 const IDQueue = [];
-const resQueue = [];
+const IDPool = new Set();
+
+function printLocals() {
+    // for debugging
+    console.log(`runningID: ${ runningID }`);
+    console.log(`IDQueue: ${ util.inspect(IDQueue) }`);
+    console.log(`IDPool: ${ util.inspect(IDPool) }`);
+}
 
 function update() {
-    if(!isRunning && resQueue.length > 0) {
 
-        const res = resQueue.shift();
-
-        isRunning = true;
-
-        res.send(`Started ${ IDQueue[0] }`);
-        console.log(`Running: ${ IDQueue[0] }`);
+    if(runningID !== null) {
+        // a workflow is already running
+        console.log('A workflow is already running');
+        return;
     }
+
+    if(IDQueue.length === 0) {
+        // no more IDs in queue
+        console.log('No more IDs in queue');
+        return;
+    }
+
+    // assign the next ID to run to
+    // runningID and delete from IDPool
+    runningID = IDQueue.shift();
+    IDPool.delete(runningID);
 }
 
 const app = express();
@@ -30,12 +46,33 @@ app.post('/', (req, res) => {
     const ID = req.body.ID;
     // TODO: handle `groupID`
 
+    console.log(`POST ID: ${ ID }`);
+
+    console.log('BEFORE POST:');
+    printLocals();
+
     // TODO: verify ID from GitHub
 
-    IDQueue.push(ID);
-    resQueue.push(res);
+    // insert ID if it does not already exist
+    if(!IDPool.has(ID) && ID !== runningID) {
+        IDQueue.push(ID);
+        IDPool.add(ID);
+    }
+
+    // log status of ID
+    if(ID === runningID) {
+        console.log(`Running ID: ${ID}`);
+        res.send(`Running ID: ${ID}`);
+    } else {
+        console.log(`Waiting ID: ${ID}`);
+        res.send(`Waiting ID: ${ID}`);
+    }
 
     update();
+
+    console.log('AFTER POST:');
+    printLocals();
+    console.log();
 });
 
 app.delete('/', (req, res) => {
@@ -43,24 +80,26 @@ app.delete('/', (req, res) => {
     const ID = req.body.ID;
     // TODO: handle `groupID`
 
-    // can't dequeue from an empty queue
-    if(IDQueue.length === 0) {
-        return res.send('¯\\_(ツ)_/¯');
+    console.log(`DELETE ID: ${ ID }`);
+    printLocals();
+
+    // set runningID to null for
+    // deletion in update and log
+    // status of ID
+    if(ID === runningID) {
+        runningID = null;
+        console.log(`Completed ID: ${ ID }`);
+        res.send(`Completed ID: ${ ID }`);
+    } else {
+        console.log(`Invalid ID: ${ ID }`);
+        res.send(`Invalid ID: ${ ID }`);
     }
-
-    // verify ID
-    if(ID !== IDQueue[0]) {
-        return res.send('¯\\_(ツ)_/¯');
-    }
-
-    const topID = IDQueue.shift();
-
-    isRunning = false;
-
-    res.send(`Completed ${ ID }`);
-    console.log(`Completed ${ topID }`);
 
     update();
+
+    console.log('AFTER DELETE:');
+    printLocals();
+    console.log();
 });
 
 const PORT = process.env.PORT || 5000;
