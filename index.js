@@ -45,7 +45,6 @@ app.post('/', (req, res) => {
 
     const ID = req.body.ID;
     // TODO: handle `groupID`
-    // TODO: secret key
 
     console.log(`POST ID: ${ ID }`);
 
